@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <!--  -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/2.0.3/css/dataTables.bootstrap5.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <style>
+      .container {
+        margin-top: 20px;
+      }
+      #dtable {
+        overflow-x: scroll;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">Cointab</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="/">Home</a>
+            </li>
+          </ul>
+          <form class="d-flex" onsubmit="handlesubmit(event)">
+            <input
+              class="form-control me-2"
+              name="search"
+              type="search"
+              placeholder="User_Id"
+              aria-label="Search"
+            />
+            <button class="btn btn-outline-success" type="submit">
+              Search
+            </button>
+          </form>
+        </div>
+      </div>
+    </nav>
+    <div class="container div hidden">
+      <center><h3>ALL USERS</h3></center>
+      <table id="dtable" class="table table-striped" style="width: 100%">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Website</th>
+            <th>City</th>
+            <th>Company</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach( (user,index) => { %>
+          <tr id="<%=index%>">
+            <td><%= user.name %></td>
+            <td><%= user.email %></td>
+            <td><%= user.phone %></td>
+            <td><%= user.website %></td>
+            <td><%= user.city %></td>
+            <td><%= user.company %></td>
+            <td>
+              <% if(user.isDbUser) { %>
+              <button
+                type="button"
+                onclick="Open(`<%=user.id %>`)"
+                class="btn btn-success"
+              >
+                Open
+              </button>
+              <% } else { %>
+              <button
+                type="button"
+                onclick="Add(`<%= index %>`,`<%=user.id %>`)"
+                class="btn btn-info"
+              >
+                Add
+              </button>
+              <% } %>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <div class="container div">
+        <div style="display: flex;flex-direction: column;justify-content: center;height: 40em;">
+        <center><h2>"Cointab SE-ASSIGNMENT"</h2></center>
+        <center><button
+            type="button"
+            onclick="toggle()"
+            class="btn btn-info"
+          >All Users</button></center>
+        </div>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+      integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        new DataTable("#dtable");
+      });
+      function handlesubmit(e) {
+        e.preventDefault();
+        const form = e.target;
+        const userId = form.querySelector('input[name="search"]').value;
+        window.location.href = `/posts/${userId}`;
+      }
+      async function Add(index, id) {
+        if (!confirm("Are you sure you want to add this user?")) return;
+        const tr = document.getElementById(index);
+        const user = {
+          name: tr.cells[0].textContent,
+          email: tr.cells[1].textContent,
+          phone: tr.cells[2].textContent,
+          website: tr.cells[3].textContent,
+          city: tr.cells[4].textContent,
+          company: tr.cells[5].textContent,
+          id: parseInt(id),
+        };
+        const res = await fetch("/adduser", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(user),
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(data.message);
+          window.location.reload();
+        } else {
+          alert(res.message);
+        }
+      }
+      function Open(id) {
+        window.location.href = `/posts/${id}`;
+      }
+      function toggle() {
+        const divs = document.querySelectorAll(".div");
+        console.log(divs);
+        divs.forEach((div) => {
+          div.classList.toggle("hidden");
+        });
+      }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.0.3/js/dataTables.bootstrap5.js"></script>
+  </body>
+</html>
